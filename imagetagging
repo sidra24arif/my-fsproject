@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Upload and Tagging</title>
+  <script src="https://static.filestackapi.com/v3/filestack.js"></script>
+  <style>
+    /* General styling */
+    body {
+      background-color: red;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    h2, h3, p {
+      margin: 10px 0;
+    }
+
+    #uploadBtn {
+      background-color: blue;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    #uploadBtn:hover {
+      background-color: darkblue;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Image Upload and Tagging</h2>
+    <button id="uploadBtn">Upload Image</button>
+    <h3>Image Tags:</h3>
+    <p id="tags"></p>
+  </div>
+  <script>
+    const apiKey = 'YOUR_API_KEY';
+    const policy = 'YOUR_POLICY';
+    const signature = 'YOUR_SIGNATURE';
+
+    const client = filestack.init(apiKey);
+
+    document.getElementById('uploadBtn').addEventListener('click', () => {
+      client.pick().then(result => {
+        const handle = result.filesUploaded[0].handle;
+        const tagsUrl = `https://cdn.filestackcontent.com/${apiKey}/security=p:${policy},s:${signature}/tags/${handle}`;
+
+        fetch(tagsUrl)
+          .then(response => response.json())
+          .then(data => {
+            if (data.tags && data.tags.auto) {
+              const tagNames = Object.keys(data.tags.auto);
+              const tags = tagNames.join(', ');
+              document.getElementById('tags').textContent = tags;
+            } else {
+              document.getElementById('tags').textContent = 'No tags found for this image.';
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching tags:', error);
+            document.getElementById('tags').textContent = 'Error fetching tags.';
+          });
+      }).catch(error => {
+        console.error('File upload error:', error);
+        document.getElementById('tags').textContent = 'Error uploading image.';
+      });
+    });
+  </script>
+</body>
+</html>
